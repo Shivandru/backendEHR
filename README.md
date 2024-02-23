@@ -34,6 +34,14 @@
 5) bcrypt- for hashing the password.
 6) cookie-parser - for sending cookies
 7) cors - for running backend and frontend together
+8) chakraUI
+9) react-icons
+10) react-redux
+11) redux
+12) recharts
+13) styled-components
+14) react
+15) react-dom
 
 ## Screenshot of home(Dashboard)
 
