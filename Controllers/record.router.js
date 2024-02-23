@@ -11,7 +11,22 @@ recordRouter.get(
   async (req, res) => {
     try {
       const records = await RecordModel.find();
-      res.status(200).send({ msg: "All records", data: records });
+      const aggregatedData = await RecordModel.aggregate([
+        { $group: { _id: "$gender", count: { $sum: 1 } } },
+        { $project: { category: "$_id", value: "$count", _id: 0 } },
+      ]);
+      const aggregatedConditionData = await RecordModel.aggregate([
+        { $group: { _id: "$condition", count: { $sum: 1 } } },
+        { $project: { category: "$_id", value: "$count", _id: 0 } },
+      ]);
+      res
+        .status(200)
+        .send({
+          msg: "All records",
+          data: records,
+          aggregatedData,
+          aggregatedConditionData,
+        });
     } catch (error) {
       res.status(404).send({ msg: error.message });
     }
@@ -41,8 +56,9 @@ recordRouter.patch(
     try {
       const { record_id } = req.params;
       const userId = req.userId;
+      const role = req.role;
       const record = await RecordModel.findOne({ _id: record_id });
-      if (record.userId === userId) {
+      if (record.userId === userId || role == "admin" || role == "doctor") {
         await RecordModel.findByIdAndUpdate({ _id: record_id }, req.body);
         res.status(200).send({ msg: "record updated successfully" });
       } else {
@@ -62,8 +78,9 @@ recordRouter.delete(
     try {
       const { record_id } = req.params;
       const userId = req.userId;
+      const role = req.role;
       const record = await RecordModel.findOne({ _id: record_id });
-      if (userId === record.userId) {
+      if (userId === record.userId || role == "admin") {
         await RecordModel.findByIdAndDelete({ _id: record_id });
         res.status(200).send({ msg: "record deleted successfully" });
       } else {
